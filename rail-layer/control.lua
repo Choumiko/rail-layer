@@ -369,7 +369,7 @@ game.onevent(defines.events.ontick, function(event)
                     -- game.player.print("Found Pole!!")
                 end
             end
-            if ((not foundPole) and fou then
+            if (not foundPole) then
                 -- game.player.print("Initial Pole!!")
                 lastBigPolePosition.x = lastRailPosition.x - 50
                 lastBigPolePosition.y = lastRailPosition.y - 50
