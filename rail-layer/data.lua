@@ -90,8 +90,8 @@ data:extend(
     pictures =
     {
       priority = "very-low",
-      frame_width = 346,
-      frame_height = 248,
+      width = 346,
+      height = 248,
       axially_symmetrical = false,
       direction_count = 256,
       filenames =
