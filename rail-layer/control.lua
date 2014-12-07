@@ -42,10 +42,12 @@ local treeRemoveForCurved = {
 }
 
 local function check_tech()
-    if (game.player.force.technologies["automated-rail-transportation"].researched) then
-        game.player.force.technologies["automated-rail-transportation"].researched = false
-        game.player.force.technologies["automated-rail-transportation"].researched = true
-        game.player.force.recipes["rail-layer"].enabled = true
+    for _,player in pairs(game.players) do
+        if (player.force.technologies["automated-rail-transportation"].researched) then
+            player.force.technologies["automated-rail-transportation"].researched = false
+            player.force.technologies["automated-rail-transportation"].researched = true
+            player.force.recipes["rail-layer"].enabled = true
+        end
     end
 end
 
@@ -246,7 +248,6 @@ game.onevent(defines.events.ontick, function(event)
                     if (straightRail > 1) then
                         -- horizontal or vertical
                         --game.player.print("Rail " .. lastRailPosition.x .. " y = " .. lastRailPosition.y .. "direction = " .. railDirection)
-                        -- For place rail direction for diagonal rail different from railDirection
                         placeRail(lastRailPosition.x, lastRailPosition.y, railDirection, "straight-rail")
                         if (railDirection == 0) then
                             lastRailPosition.y = lastRailPosition.y - 2
