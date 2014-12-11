@@ -201,7 +201,7 @@ local function placeSignal(train, X, Y, railDirection)
     local canplace = game.canplaceentity{name = "rail-signal", position = {signalPoint.x, signalPoint.y}, direction = railDirection}
     if canplace then
         game.createentity{name = "rail-signal", position = {signalPoint.x, signalPoint.y}, direction = signalDirection, force = game.forces.player}
-        removeFromTrain("rail-signal")
+        removeFromTrain(train, "rail-signal")
         railSignal = railSignal - 1
         return true
     else
@@ -224,14 +224,14 @@ local function placeRail(train, X, Y, railDirection, railType)
             removeTrees(train, X + treeRemoveForCurved[index][i].x, Y + treeRemoveForCurved[index][i].y)
         end
     end
-
+    game.player.print(X.."/"..Y.." dir "..railDirection)
     local canplace = game.canplaceentity{name = railType, position = {X, Y}, direction = railDirection}
     if canplace then
         game.createentity{name = railType, position = {X, Y}, direction = railDirection, force = game.forces.player}
         --game.createentity{name = "ghost", position = {X, Y}, innername = railType, direction = railDirection, force = game.player.force}
         removeFromTrain(train, railType)
         if (railType == "straight-rail") then
-            if signalCount >= signalPlacement.distance then
+            if railSignal >  1 and signalCount >= signalPlacement.distance then
                 if placeSignal(train, X, Y, signalDirection) then
                     signalCount = 0
                 end

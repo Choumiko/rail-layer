@@ -1,5 +1,5 @@
 require "defines"
-godmode = true
+godmode = false
 removeStone = true
 
 polePlacement = {
