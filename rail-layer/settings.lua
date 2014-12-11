@@ -8,3 +8,7 @@ polePlacement = {
     data = {},
     dir = {}
 }
+
+signalPlacement = {
+    distance = 15, -- signal distance in straight rails (roughly)
+}

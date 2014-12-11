@@ -3,6 +3,8 @@ require "settings"
 local lastRailPosition = {x = 0, y = 0}
 local lastBigPolePosition = {x = 0, y = 0}
 local lastCheckPole = {x = 0, y = 0}
+local signalCount = 0
+
 local railDirection = 0
 local wantedDirection = 0
 local needDiagonal = false
@@ -10,6 +12,7 @@ local needDiagonal = false
 local straightRail = 0
 local curvedRail = 0
 local bigElectricPole = 0
+local railSignal = 0
 
 local playerInfo = {}
 
@@ -35,11 +38,10 @@ polePlacement.dir = {
     {x = 1, y = 1},
     {x = 1, y = 1}
 }
+
 for i = 1, 8, 1 do
     polePlacement.data[i].x = (polePlacement.data[i].x + polePlacement.distance) * polePlacement.side * polePlacement.dir[i].x
     polePlacement.data[i].y = (polePlacement.data[i].y + polePlacement.distance) * polePlacement.side * polePlacement.dir[i].y
-    -- polePlacement.data[i].x = (polePlacement.data[i].x + polePlacement.distance) * polePlacement.side
-    -- polePlacement.data[i].y = (polePlacement.data[i].y + polePlacement.distance) * polePlacement.side
 end
 
 local curves={
@@ -95,6 +97,7 @@ local function update_cargo(train)
     straightRail = 0
     curvedRail = 0
     bigElectricPole = 0
+    railSignal = 0
     local wagon = train.carriages
     for _, entity in ipairs(wagon) do
         if (entity.type == "cargo-wagon") then
@@ -102,6 +105,7 @@ local function update_cargo(train)
             straightRail = straightRail + inv.getitemcount("straight-rail")
             curvedRail = curvedRail + inv.getitemcount("curved-rail")
             bigElectricPole = bigElectricPole + inv.getitemcount("big-electric-pole")
+            railSignal = railSignal + inv.getitemcount("rail-signal")
         end
     end
     --game.player.print("Straight = " .. straightRail .. " curved = " .. curvedRail .. " bigPole = " .. bigElectricPole)
@@ -152,7 +156,57 @@ local function removeFromTrain(train, itemName)
     end
 end
 
+local function placeSignal(train, X, Y, railDirection)
+    local signalPoint = {x = X, y = Y}
+    local signalDirection = 0
+
+    if railDirection == 0 then
+        signalPoint.x = X + 1.5
+        signalPoint.y = Y + 0.5
+        signalDirection = 4
+    elseif railDirection == 1 then
+        signalPoint.x = X + 1
+        signalPoint.y = Y - 1
+        signalDirection = 3
+    elseif railDirection == 2 then
+        signalPoint.x = X + 0.5
+        signalPoint.y = Y - 1.5
+        signalDirection = 2
+    elseif railDirection == 3 then
+        signalPoint.x = X - 1.5
+        signalPoint.y = Y - 1.5
+        signalDirection = 1
+    elseif railDirection == 4 then
+        signalPoint.x = X - 1.5
+        signalPoint.y = Y - 0.5
+        signalDirection = 0
+    elseif railDirection == 5 then
+        signalPoint.x = X - 1
+        signalPoint.y = Y + 1
+        signalDirection = 7
+    elseif railDirection == 6 then
+        signalPoint.x = X - 0.5
+        signalPoint.y = Y + 1.5
+        signalDirection = 6
+    elseif railDirection == 7 then
+        signalPoint.x = X + 1
+        signalPoint.y = Y + 1
+        signalDirection = 5
+    end
+    removeTrees(train, signalPoint.x, signalPoint.y)
+    local canplace = game.canplaceentity{name = "rail-signal", position = {signalPoint.x, signalPoint.y}, direction = railDirection}
+    if canplace then
+        game.createentity{name = "rail-signal", position = {signalPoint.x, signalPoint.y}, direction = signalDirection, force = game.forces.player}
+        removeFromTrain("rail-signal")
+        railSignal = railSignal - 1
+        return true
+    else
+        return false
+    end
+end
+
 local function placeRail(train, X, Y, railDirection, railType)
+    local signalDirection = railDirection
     if (railType == "straight-rail") then
         -- fix for 0.10.12 as direction of diagonal track different for placed entity and direction asked in createentity
         if railDirection % 2 == 1 then
@@ -173,6 +227,13 @@ local function placeRail(train, X, Y, railDirection, railType)
         --game.createentity{name = "ghost", position = {X, Y}, innername = railType, direction = railDirection, force = game.player.force}
         removeFromTrain(train, railType)
         if (railType == "straight-rail") then
+            if signalCount >= signalPlacement.distance then
+                if placeSignal(train, X, Y, signalDirection) then
+                    signalCount = 0
+                end
+            else
+                signalCount = signalCount + 1
+            end
             straightRail = straightRail - 1
         elseif (railType == "curved-rail") then
             curvedRail = curvedRail - 1
@@ -253,31 +314,6 @@ local function railLying(player, index)
                 local tmp = {x = lastCheckPole.x, y = lastCheckPole.y}
                 lastCheckPole.x = lastRailPosition.x + polePlacement.data[railDirection+1].x
                 lastCheckPole.y = lastRailPosition.y + polePlacement.data[railDirection+1].y
-                -- if railDirection == 0 then
-                    -- lastCheckPole.x = lastRailPosition.x + 2
-                    -- lastCheckPole.y = lastRailPosition.y
-                -- elseif railDirection == 1 then
-                    -- lastCheckPole.x = lastRailPosition.x + 2.5
-                    -- lastCheckPole.y = lastRailPosition.y - 2.5
-                -- elseif railDirection == 2 then
-                       -- lastCheckPole.x = lastRailPosition.x
-                    -- lastCheckPole.y = lastRailPosition.y - 2
-                -- elseif railDirection == 3 then
-                    -- lastCheckPole.x = lastRailPosition.x - 2.5
-                    -- lastCheckPole.y = lastRailPosition.y - 2.5
-                -- elseif railDirection == 4 then
-                    -- lastCheckPole.x = lastRailPosition.x - 2
-                    -- lastCheckPole.y = lastRailPosition.y
-                -- elseif railDirection == 5 then
-                    -- lastCheckPole.x = lastRailPosition.x - 2.5
-                    -- lastCheckPole.y = lastRailPosition.y + 2.5
-                -- elseif railDirection == 6 then
-                    -- lastCheckPole.x = lastRailPosition.x
-                    -- lastCheckPole.y = lastRailPosition.y + 2
-                -- elseif railDirection == 7 then
-                    -- lastCheckPole.x = lastRailPosition.x + 2.5
-                    -- lastCheckPole.y = lastRailPosition.y + 2.5
-                -- end
                 local poleDistance = distance(lastBigPolePosition, lastCheckPole)
                 --game.player.print("poleDistance = " .. poleDistance)
                 if  poleDistance > 900 then
