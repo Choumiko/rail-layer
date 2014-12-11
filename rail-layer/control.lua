@@ -449,7 +449,7 @@ local function railLying(player, index)
         if (not foundPole) then
             -- Player.print("Initial Pole!!")
             lastBigPolePosition = posAdd(lastRailPosition, -50, -50)
-            lastCheckPole = posAdd(lastRailPosition, 2, -2)
+            lastCheckPole = posAdd(lastRailPosition, polePlacement.data[trainDirection+1].x, polePlacement.data[trainDirection+1].y)
         end
         --Player.print("trainDirection = " .. trainDirection)
         --Player.print("last rail x = " .. lastRailPosition.x .. " y = " .. lastRailPosition.y)
