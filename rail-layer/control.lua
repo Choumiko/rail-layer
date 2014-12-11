@@ -16,6 +16,10 @@ local railSignal = 0
 
 local playerInfo = {}
 
+local function posAdd(pos, x, y)
+    return {x = pos.x + x, y = pos.y + y}
+end
+
 polePlacement.data = {
     {x = 2, y = 0},
     {x = 1.5, y = 1.5},
@@ -330,28 +334,24 @@ local function railLying(player, index)
                     --game.player.print("Rail " .. lastRailPosition.x .. " y = " .. lastRailPosition.y .. "direction = " .. railDirection)
                     placeRail(train, lastRailPosition.x, lastRailPosition.y, railDirection, "straight-rail")
                     if (railDirection == 0) then
-                        lastRailPosition.y = lastRailPosition.y - 2
+                        lastRailPosition = posAdd(lastRailPosition, 0, -2)
                     elseif (railDirection == 1) then
-                        lastRailPosition.x = lastRailPosition.x - 1
-                        lastRailPosition.y = lastRailPosition.y - 1
+                        lastRailPosition = posAdd(lastRailPosition, -1, -1)
                         needDiagonal = not needDiagonal
                     elseif (railDirection == 2) then
-                        lastRailPosition.x = lastRailPosition.x - 2
+                        lastRailPosition = posAdd(lastRailPosition, -2, 0)
                     elseif (railDirection == 3) then
-                        lastRailPosition.x = lastRailPosition.x - 1
-                        lastRailPosition.y = lastRailPosition.y + 1
+                        lastRailPosition = posAdd(lastRailPosition, -1, 1)
                         needDiagonal = not needDiagonal
                     elseif (railDirection == 4) then
-                        lastRailPosition.y = lastRailPosition.y + 2
+                        lastRailPosition = posAdd(lastRailPosition, 0, 2)
                     elseif (railDirection == 5) then
-                        lastRailPosition.x = lastRailPosition.x + 1
-                        lastRailPosition.y = lastRailPosition.y + 1
+                        lastRailPosition = posAdd(lastRailPosition, 1, 1)
                         needDiagonal = not needDiagonal
                     elseif (railDirection == 6) then
-                        lastRailPosition.x = lastRailPosition.x + 2
+                        lastRailPosition = posAdd(lastRailPosition, 2, 0)
                     elseif (railDirection == 7) then
-                        lastRailPosition.x = lastRailPosition.x + 1
-                        lastRailPosition.y = lastRailPosition.y - 1
+                        lastRailPosition = posAdd(lastRailPosition, 1, -1)
                         needDiagonal = not needDiagonal
                     end
                 end
@@ -360,17 +360,13 @@ local function railLying(player, index)
                     if needDiagonal then
                         placeRail(train, lastRailPosition.x, lastRailPosition.y, railDirection, "straight-rail")
                         if (railDirection == 1) then
-                            lastRailPosition.x = lastRailPosition.x - 1
-                            lastRailPosition.y = lastRailPosition.y - 1
+                            lastRailPosition = posAdd(lastRailPosition, -1, -1)
                         elseif (railDirection == 3) then
-                            lastRailPosition.x = lastRailPosition.x - 1
-                            lastRailPosition.y = lastRailPosition.y + 1
+                            lastRailPosition = posAdd(lastRailPosition, -1, 1)
                         elseif (railDirection == 5) then
-                            lastRailPosition.x = lastRailPosition.x + 1
-                            lastRailPosition.y = lastRailPosition.y + 1
+                            lastRailPosition = posAdd(lastRailPosition, 1, 1)
                         elseif (railDirection == 7) then
-                            lastRailPosition.x = lastRailPosition.x + 1
-                            lastRailPosition.y = lastRailPosition.y - 1
+                            lastRailPosition = posAdd(lastRailPosition, 1, -1)
                         end
                     end
                     for i = 1, 16, 1 do
@@ -452,10 +448,8 @@ local function railLying(player, index)
         end
         if (not foundPole) then
             -- Player.print("Initial Pole!!")
-            lastBigPolePosition.x = lastRailPosition.x - 50
-            lastBigPolePosition.y = lastRailPosition.y - 50
-            lastCheckPole.x = lastRailPosition.x + 2
-            lastCheckPole.y = lastRailPosition.x - 2
+            lastBigPolePosition = posAdd(lastRailPosition, -50, -50)
+            lastCheckPole = posAdd(lastRailPosition, 2, -2)
         end
         --Player.print("trainDirection = " .. trainDirection)
         --Player.print("last rail x = " .. lastRailPosition.x .. " y = " .. lastRailPosition.y)
