@@ -163,8 +163,7 @@ data:extend(
     open_sound = { filename = "__base__/sound/car-door-open.ogg", volume=0.7 },
     close_sound = { filename = "__base__/sound/car-door-close.ogg", volume = 0.7 },
     sound_minimum_speed = 0.5;
-  },
-
+  }
 })
 
 table.insert(data.raw["technology"]["automated-rail-transportation"].effects,{type = "unlock-recipe",recipe = "rail-layer"})

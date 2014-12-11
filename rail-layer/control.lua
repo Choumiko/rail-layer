@@ -1,4 +1,4 @@
-require "defines"
+require "settings"
 
 local lastRailPosition = {x = 0, y = 0}
 local lastBigPolePosition = {x = 0, y = 0}
@@ -12,6 +12,35 @@ local curvedRail = 0
 local bigElectricPole = 0
 
 local playerInfo = {}
+
+polePlacement.data = {
+    {x = 2, y = 0},
+    {x = 1.5, y = 1.5},
+    {x = 0, y = 2},
+    {x = 1.5, y = 1.5},
+
+    {x = 2, y = 0},
+    {x = 1.5, y = 1.5},
+    {x = 0, y = 2},
+    {x = 1.5, y = 1.5}
+}
+polePlacement.dir = {
+    {x = 1, y = 1},
+    {x = 1, y = -1},
+    {x = 1, y = -1},
+    {x = -1, y = -1},
+
+    {x = -1, y = 1},
+    {x = -1, y = 1},
+    {x = 1, y = 1},
+    {x = 1, y = 1}
+}
+for i = 1, 8, 1 do
+    polePlacement.data[i].x = (polePlacement.data[i].x + polePlacement.distance) * polePlacement.side * polePlacement.dir[i].x
+    polePlacement.data[i].y = (polePlacement.data[i].y + polePlacement.distance) * polePlacement.side * polePlacement.dir[i].y
+    -- polePlacement.data[i].x = (polePlacement.data[i].x + polePlacement.distance) * polePlacement.side
+    -- polePlacement.data[i].y = (polePlacement.data[i].y + polePlacement.distance) * polePlacement.side
+end
 
 local curves={
     {raildirection = 2, wanteddirection = 3, curvedir = 6, xoffset = -3.0, yoffset =  1.0, xmove = -7.5, ymove =  4.5, corner = 1, cornerx = -6.5, cornery =  3.5, cornerr = 7},
@@ -101,9 +130,16 @@ local function removeTrees(train, X, Y)
         addItem(train, "raw-wood", 1)
         entity.die()
     end
+    if removeStone then
+        for _, entity in ipairs(game.findentitiesfiltered{area = area, name = "stone-rock"}) do
+            -- game.player.print("Removing "..entity.name.." @("..entity.position.x..","..entity.position.y..").")
+            entity.die()
+        end
+    end
 end
 
 local function removeFromTrain(train, itemName)
+    if godmode then return end
     local wagons = train.carriages
     for _, entity in ipairs(wagons) do
         if (entity.type == "cargo-wagon") then
@@ -215,31 +251,33 @@ local function railLying(player, index)
             --game.player.print("Go to " .. railDirection)
             if (bigElectricPole > 0) then
                 local tmp = {x = lastCheckPole.x, y = lastCheckPole.y}
-                if railDirection == 0 then
-                    lastCheckPole.x = lastRailPosition.x + 2
-                    lastCheckPole.y = lastRailPosition.y
-                elseif railDirection == 1 then
-                      lastCheckPole.x = lastRailPosition.x + 2.5
-                    lastCheckPole.y = lastRailPosition.y - 2.5
-                elseif railDirection == 2 then
-                       lastCheckPole.x = lastRailPosition.x
-                    lastCheckPole.y = lastRailPosition.y - 2
-                elseif railDirection == 3 then
-                    lastCheckPole.x = lastRailPosition.x - 2.5
-                    lastCheckPole.y = lastRailPosition.y - 2.5
-                elseif railDirection == 4 then
-                    lastCheckPole.x = lastRailPosition.x + 2
-                    lastCheckPole.y = lastRailPosition.y
-                elseif railDirection == 5 then
-                    lastCheckPole.x = lastRailPosition.x + 2.5
-                    lastCheckPole.y = lastRailPosition.y - 2.5
-                elseif railDirection == 6 then
-                    lastCheckPole.x = lastRailPosition.x
-                    lastCheckPole.y = lastRailPosition.y - 2
-                elseif railDirection == 7 then
-                    lastCheckPole.x = lastRailPosition.x - 2.5
-                    lastCheckPole.y = lastRailPosition.y - 2.5
-                end
+                lastCheckPole.x = lastRailPosition.x + polePlacement.data[railDirection+1].x
+                lastCheckPole.y = lastRailPosition.y + polePlacement.data[railDirection+1].y
+                -- if railDirection == 0 then
+                    -- lastCheckPole.x = lastRailPosition.x + 2
+                    -- lastCheckPole.y = lastRailPosition.y
+                -- elseif railDirection == 1 then
+                    -- lastCheckPole.x = lastRailPosition.x + 2.5
+                    -- lastCheckPole.y = lastRailPosition.y - 2.5
+                -- elseif railDirection == 2 then
+                       -- lastCheckPole.x = lastRailPosition.x
+                    -- lastCheckPole.y = lastRailPosition.y - 2
+                -- elseif railDirection == 3 then
+                    -- lastCheckPole.x = lastRailPosition.x - 2.5
+                    -- lastCheckPole.y = lastRailPosition.y - 2.5
+                -- elseif railDirection == 4 then
+                    -- lastCheckPole.x = lastRailPosition.x - 2
+                    -- lastCheckPole.y = lastRailPosition.y
+                -- elseif railDirection == 5 then
+                    -- lastCheckPole.x = lastRailPosition.x - 2.5
+                    -- lastCheckPole.y = lastRailPosition.y + 2.5
+                -- elseif railDirection == 6 then
+                    -- lastCheckPole.x = lastRailPosition.x
+                    -- lastCheckPole.y = lastRailPosition.y + 2
+                -- elseif railDirection == 7 then
+                    -- lastCheckPole.x = lastRailPosition.x + 2.5
+                    -- lastCheckPole.y = lastRailPosition.y + 2.5
+                -- end
                 local poleDistance = distance(lastBigPolePosition, lastCheckPole)
                 --game.player.print("poleDistance = " .. poleDistance)
                 if  poleDistance > 900 then
