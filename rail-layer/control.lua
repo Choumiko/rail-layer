@@ -224,8 +224,9 @@ local function placeRail(train, X, Y, railDirection, railType)
             removeTrees(train, X + treeRemoveForCurved[index][i].x, Y + treeRemoveForCurved[index][i].y)
         end
     end
-    game.player.print(X.."/"..Y.." dir "..railDirection)
-    local canplace = game.canplaceentity{name = railType, position = {X, Y}, direction = railDirection}
+    -- game.player.print(X.."/"..Y.." dir "..railDirection)
+    -- local canplace = game.canplaceentity{name = railType, position = {X, Y}, direction = railDirection}
+    local canplace = true
     if canplace then
         game.createentity{name = railType, position = {X, Y}, direction = railDirection, force = game.forces.player}
         --game.createentity{name = "ghost", position = {X, Y}, innername = railType, direction = railDirection, force = game.player.force}
