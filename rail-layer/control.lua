@@ -122,13 +122,11 @@ local function addItem(train, itemName, count)
             if (entity.getinventory(1).caninsert({name = itemName, count = count})) then
                 entity.getinventory(1).insert({name = itemName, count = count})
                 return
-            else
-                local position = game.findnoncollidingposition("item-on-ground", train.position, 100, 0.5)
-                game.createentity{name = "item-on-ground", position = position, stack = {name = itemName, count = 1}}
-                return
             end
         end
     end
+    local position = game.findnoncollidingposition("item-on-ground", game.player.character.vehicle.position, 100, 0.5)
+    game.createentity{name = "item-on-ground", position = position, stack = {name = itemName, count = 1}}
 end
 
 local function removeTrees(train, X, Y)
@@ -198,13 +196,14 @@ local function placeSignal(train, X, Y, railDirection)
         signalDirection = 5
     end
     removeTrees(train, signalPoint.x, signalPoint.y)
-    local canplace = game.canplaceentity{name = "rail-signal", position = {signalPoint.x, signalPoint.y}, direction = railDirection}
+    local canplace = game.canplaceentity{name = "rail-signal", position = {signalPoint.x, signalPoint.y}, direction = signalDirection}
     if canplace then
         game.createentity{name = "rail-signal", position = {signalPoint.x, signalPoint.y}, direction = signalDirection, force = game.forces.player}
         removeFromTrain(train, "rail-signal")
         railSignal = railSignal - 1
         return true
     else
+        --game.player.print("error: railsignal@"..signalPoint.x.."/"..signalPoint.y.." dir "..signalDirection)
         return false
     end
 end
@@ -232,6 +231,7 @@ local function placeRail(train, X, Y, railDirection, railType)
         --game.createentity{name = "ghost", position = {X, Y}, innername = railType, direction = railDirection, force = game.player.force}
         removeFromTrain(train, railType)
         if (railType == "straight-rail") then
+            --game.player.print("# "..signalCount)
             if railSignal >  1 and signalCount >= signalPlacement.distance then
                 if placeSignal(train, X, Y, signalDirection) then
                     signalCount = 0
@@ -282,7 +282,7 @@ local function railLying(player, index)
     -- Player.print("Player position x = " .. playerPosition.x .. " y = " .. playerPosition.y)
     -- Player.print("Want direction = " .. wantedDirection)
     -- Player.print("Train direction = " .. trainDirection)
-    if playerInfo[index].active then
+    if #playerInfo > 0 and playerInfo[index].active then
         local d = math.abs(lastRailPosition.x - playerPosition.x) + math.abs(lastRailPosition.y - playerPosition.y)
         if d < 15 then
             local cursor = player.screen2realposition(player.cursorposition)
@@ -421,10 +421,14 @@ local function railLying(player, index)
                             lastRailPosition.y = y - 0.5
                         end
                     end
-                    playerInfo[index].railDirection = trainDirection
-                    foundRail = true
-                    needDiagonal = false
-                    break
+                    if #playerInfo > 0 then
+                        playerInfo[index].railDirection = trainDirection
+                        foundRail = true
+                        needDiagonal = false
+                        break
+                    else
+                        break
+                    end
                 end
             elseif (entity.name == "curved-rail") then
                 -- TODO
@@ -454,13 +458,15 @@ local function railLying(player, index)
         end
         --Player.print("trainDirection = " .. trainDirection)
         --Player.print("last rail x = " .. lastRailPosition.x .. " y = " .. lastRailPosition.y)
-        playerInfo[index].active = foundRail
+        if #playerInfo > 0 then
+            playerInfo[index].active = foundRail
+        end
     end
 end
 
 game.onevent(defines.events.ontick, function(event)
     for index, player in pairs(game.players) do
-        if game.player.character and game.player.character.vehicle and game.player.character.vehicle.name == "rail-layer" then
+        if game.player.character and game.player.character.name ~= "fatcontroller" and game.player.character.vehicle and game.player.character.vehicle.name == "rail-layer" then
             railLying(player, index)
         else
             playerInfo[index] = {active = false, railDirection = nil}
