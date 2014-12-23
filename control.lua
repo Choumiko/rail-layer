@@ -224,8 +224,7 @@ local function placeRail(train, X, Y, railDirection, railType)
         end
     end
     -- game.player.print(X.."/"..Y.." dir "..railDirection)
-    -- local canplace = game.canplaceentity{name = railType, position = {X, Y}, direction = railDirection}
-    local canplace = true
+    local canplace = game.canplaceentity{name = railType, position = {X, Y}, direction = railDirection}
     if canplace then
         game.createentity{name = railType, position = {X, Y}, direction = railDirection, force = game.forces.player}
         --game.createentity{name = "ghost", position = {X, Y}, innername = railType, direction = railDirection, force = game.player.force}
